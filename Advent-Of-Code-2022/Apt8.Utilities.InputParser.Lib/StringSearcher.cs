@@ -27,21 +27,18 @@ public sealed class StringSearcher : IInputSearcher
         for (; index < input.Length - _search.Length; index++)
         {
             var slice = input.Slice(index, _search.Length);
-            if (slice.SequenceEqual(_search))
-            {
-                endIndex = index + _search.Length;
-                return true;
-            }
-        }
-
-        if (_includeEndAsFound)
-        {
+            if (!slice.SequenceEqual(_search)) continue;
+            
             endIndex = index + _search.Length - 1;
             return true;
         }
 
+        if (!_includeEndAsFound) return false;
+        
+        endIndex = index + _search.Length - 1;
+        return true;
 
-        return false;
+
     }
 
 

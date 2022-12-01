@@ -7,9 +7,9 @@ public sealed class InputParser
 
     public int NodeCount { get; }
 
-    private Element[] Elements { get; }
+    public Element[] Elements { get; }
 
-    private readonly struct Element
+    public readonly struct Element
     {
         //private readonly InputParser _document;
 
@@ -17,17 +17,17 @@ public sealed class InputParser
 
         public byte Length { get; }
 
-        //public byte Depth { get; }
+        public byte Depth { get; }
 
         public int ParentIndex { get; }
 
 
-        public Element(/*InputParser document, */in ushort index, in byte length/*, in byte depth*/, int parentIndex = -1)
+        public Element(/*InputParser document, */in ushort index, in byte length, in byte depth, int parentIndex = -1)
         {
             //_document = document;
             Index = index;
             Length = length;
-            //Depth = depth;
+            Depth = depth;
             ParentIndex = parentIndex;
         }
 
@@ -53,8 +53,8 @@ public sealed class InputParser
     {
         ReadOnlySpan<char> slice = _input;
 
-        int ei = elementIndex;
-        int count = 1;
+        var ei = elementIndex;
+        var count = 1;
         while (Elements[ei].ParentIndex != -1)
         {
             count++;
@@ -80,10 +80,10 @@ public sealed class InputParser
     {
         if (inputSearcherIndex >= _searchers.Length)
             return value;
-        int index = 0;
+        var index = 0;
         while (_searchers[inputSearcherIndex].FindNext(in input, out var start, out var end, index))
         {
-            var slice = input[start..end];
+            var slice = input.Slice(start, (end + 1) - start);
             index = end + 1;
             value++;
             value += FindNodeCount(slice, inputSearcherIndex + 1, 0);
@@ -99,11 +99,11 @@ public sealed class InputParser
         var index = 0;
         while (_searchers[inputSearcherIndex].FindNext(in input, out var start, out var end, index))
         {
-            var length = end - start;
+            var length = (end + 1) - start;
 
-            Elements[nodeIndex] = new Element(/*this, */(ushort)start, (byte)length, /*(byte)inputSearcherIndex, */parentIndex);
+            Elements[nodeIndex] = new Element(/*this, */(ushort)start, (byte)length, (byte)inputSearcherIndex, parentIndex);
 
-            var slice = input[start..end];
+            var slice = input.Slice(start, length);//[start..(end + 1)];
             index = end + 1;
 
             nodeIndex++;

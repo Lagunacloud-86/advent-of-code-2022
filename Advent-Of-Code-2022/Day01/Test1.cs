@@ -3,7 +3,7 @@ using Apt8.Utilities.InputParser.Lib;
 
 namespace Day01;
 
-public sealed class Part2 : IAOCProject<int>
+public sealed class Test1 : IAOCProject<int>
 {
     private readonly struct Elf
     {
@@ -36,9 +36,7 @@ public sealed class Part2 : IAOCProject<int>
 
     public int Run()
     {
-        return _elfs
-            .OrderByDescending(x => x.FoodCalories.Sum())
-            .Take(3)
-            .Sum(x => x.FoodCalories.Sum());
+        var value = _elfs.Max(x => x.FoodCalories.Sum());
+        return value;
     }
 }

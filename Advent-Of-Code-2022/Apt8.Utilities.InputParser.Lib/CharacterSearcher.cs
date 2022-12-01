@@ -24,21 +24,18 @@ public sealed class CharacterSearcher : IInputSearcher
         startIndex = index;
         for(; index < input.Length; index++)
         {
-            if (input[index] == _searchCharacter)
-            {
-                endIndex = index;
-                return true;
-            }
-        }
-
-        if (_includeEndAsFound)
-        {
-            endIndex = index - 1;
+            if (input[index] != _searchCharacter) continue;
+            
+            endIndex = index;
             return true;
         }
 
+        if (!_includeEndAsFound) return false;
+        
+        endIndex = index - 1;
+        return true;
 
-        return false;
+
     }
 
 

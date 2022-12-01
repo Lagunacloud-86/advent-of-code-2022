@@ -3,7 +3,7 @@ using Apt8.Utilities.InputParser.Lib;
 
 namespace Day01;
 
-public sealed class Part2 : IAOCProject<int>
+public sealed class Test2 : IAOCProject<int>
 {
     private readonly struct Elf
     {

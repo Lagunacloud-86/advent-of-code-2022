@@ -5,39 +5,38 @@ namespace Day01;
 
 public sealed class Part1 : IAOCProject<int>
 {
-    private readonly struct Vector
+    private readonly struct Elf
     {
-        public int X { get; }
-        public int Y { get; }
-        public int Z { get; }
+        public List<int> FoodCalories { get; }
 
-        public Vector(in InputParser parser, in int index)
+        public Elf(in InputParser parser, in int index)
         {
-            var xSpan = parser.GetValue(index + 1);
-            var ySpan = parser.GetValue(index + 2);
-            var zSpan = parser.GetValue(index + 3);
-
-            X = int.Parse(xSpan);
-            Y = int.Parse(ySpan);
-            Z = int.Parse(zSpan);
+            FoodCalories = new List<int>();
+            
+            var roValue = parser.GetValue(index);
+            var calories = new InputParser(roValue.ToString(), new CharacterSearcher('\n', true));
+            
+            for (var i = 0; i < calories.NodeCount; ++i)
+                if (int.TryParse(calories.GetValue(i), out var value))
+                    FoodCalories.Add(value);
         }
     }
 
-    private readonly List<Vector> _vectors = new ();
+    private readonly List<Elf> _elfs = new ();
     
     public void Init(in string input)
     {
         var fileData = File.ReadAllText(input);
         var parser = new InputParser(
             fileData, 
-            new CharacterSearcher('\n', true), new CharacterSearcher(',', true));
-        for (var i = 0; i < parser.NodeCount; i += 4)
-            _vectors.Add(new Vector(parser, in i));
+            new StringSearcher("\r\n\r\n", true));
+        for (var i = 0; i < parser.NodeCount; i++)
+            _elfs.Add(new Elf(parser, in i));
     }
 
     public int Run()
     {
-        var value = _vectors.Sum(x => x.X + x.Y + x.Z);
+        var value = _elfs.Max(x => x.FoodCalories.Sum());
         return value;
     }
 }
