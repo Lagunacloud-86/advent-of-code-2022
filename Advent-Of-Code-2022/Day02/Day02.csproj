@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AOCProject\AOCProject.csproj" />
     <ProjectReference Include="..\Apt8.Utilities.InputParser.Lib\Apt8.Utilities.InputParser.Lib.csproj" />
   </ItemGroup>
 
