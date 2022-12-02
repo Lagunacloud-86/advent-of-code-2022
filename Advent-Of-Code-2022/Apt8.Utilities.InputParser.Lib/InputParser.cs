@@ -2,7 +2,6 @@
 
 public sealed class InputParser
 {
-    private readonly string _input;
     private readonly IInputSearcher[] _searchers;
 
     public int NodeCount { get; }
@@ -38,7 +37,6 @@ public sealed class InputParser
 
     public InputParser(string input, params IInputSearcher[] searchers)
     {
-        _input = input;
         _searchers = searchers;
 
         NodeCount = FindNodeCount(input, 0, 0);
@@ -48,10 +46,20 @@ public sealed class InputParser
         FindNodes(input, 0, -1, ref nodeIndex);
     }
 
-
-    public ReadOnlySpan<char> GetValue(int elementIndex)
+    public InputParser(in ReadOnlySpan<char> input, params IInputSearcher[] searchers)
     {
-        ReadOnlySpan<char> slice = _input;
+        _searchers = searchers;
+
+        NodeCount = FindNodeCount(input, 0, 0);
+        Elements = new Element[NodeCount];
+
+        var nodeIndex = 0;
+        FindNodes(input, 0, -1, ref nodeIndex);
+    }
+
+    public ReadOnlySpan<char> GetValue(in ReadOnlySpan<char> input, int elementIndex)
+    {
+        var slice = input;
 
         var ei = elementIndex;
         var count = 1;
@@ -76,7 +84,7 @@ public sealed class InputParser
     }
 
 
-    private int FindNodeCount(ReadOnlySpan<char> input, int inputSearcherIndex, int value)
+    private int FindNodeCount(in ReadOnlySpan<char> input, int inputSearcherIndex, int value)
     {
         if (inputSearcherIndex >= _searchers.Length)
             return value;
@@ -86,12 +94,12 @@ public sealed class InputParser
             var slice = input.Slice(start, (end + 1) - start);
             index = end + 1;
             value++;
-            value += FindNodeCount(slice, inputSearcherIndex + 1, 0);
+            value += FindNodeCount(in slice, inputSearcherIndex + 1, 0);
         }
         return value;
     }
 
-    private void FindNodes(ReadOnlySpan<char> input, int inputSearcherIndex, int parentIndex, ref int nodeIndex)
+    private void FindNodes(in ReadOnlySpan<char> input, int inputSearcherIndex, int parentIndex, ref int nodeIndex)
     {
         if (inputSearcherIndex >= _searchers.Length)
             return;
@@ -107,7 +115,7 @@ public sealed class InputParser
             index = end + 1;
 
             nodeIndex++;
-            FindNodes(slice, inputSearcherIndex + 1, nodeIndex - 1, ref nodeIndex);
+            FindNodes(in slice, inputSearcherIndex + 1, nodeIndex - 1, ref nodeIndex);
         }
         
     }

@@ -5,28 +5,28 @@ namespace Day02;
 
 public sealed class Part2 : IAOCProject<int>
 {
-    private StrategyPart2[] _strategies;
+    private StrategyPart2[] _strategies = Array.Empty<StrategyPart2>();
     
     public void Init(in string input)
     {
-        var fileContents = File.ReadAllText(input);
+        ReadOnlySpan<char> fileContents = File.ReadAllText(input);
         
-        var parser = new InputParser(fileContents, new CharacterSearcher('\n', true));
+        var parser = new InputParser(in fileContents, new CharacterSearcher('\n', true));
         _strategies = new StrategyPart2 [parser.NodeCount];
         for (var i = 0; i < parser.NodeCount; ++i)
         {
-            var value = parser.GetValue(i);
-            var entry = new InputParser(value.ToString(), new CharacterSearcher(' ', true));
+            var line = parser.GetValue(in fileContents, i);
+            var entry = new InputParser(in line, new CharacterSearcher(' ', true));
             var opponentAction = GameAction.Rock;
             var result = GameResult.Win;
-            opponentAction = entry.GetValue(0)[0] switch
+            opponentAction = entry.GetValue(in line, 0)[0] switch
             {
                 'A' => GameAction.Rock,
                 'B' => GameAction.Paper,
                 'C' => GameAction.Scissors,
                 _ => opponentAction
             };   
-            result = entry.GetValue(1)[0] switch
+            result = entry.GetValue(in line, 1)[0] switch
             {
                 'X' => GameResult.Lose,
                 'Y' => GameResult.Draw,
@@ -55,7 +55,7 @@ public sealed class Part2 : IAOCProject<int>
             
             //var strategy = new Strategy(_strategies[i].OpponentMove, (GameAction)(yourMove + 1));
             
-            Console.WriteLine($"{_strategies[i].Result}, {_strategies[i].OpponentMove} vs {(GameAction)(yourMove + 1)}");
+            //Console.WriteLine($"{_strategies[i].Result}, {_strategies[i].OpponentMove} vs {(GameAction)(yourMove + 1)}");
             //var result = GetGameResult(in strategy);
             score += 3 * (int) _strategies[i].Result + (yourMove + 1);
         }

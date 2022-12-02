@@ -5,27 +5,27 @@ namespace Day02;
 
 public sealed class Part1 : IAOCProject<int>
 {
-    private Strategy[] _strategies;
+    private Strategy[] _strategies = Array.Empty<Strategy>();
     
     public void Init(in string input)
     {
-        var fileContents = File.ReadAllText(input);
+        ReadOnlySpan<char> fileContents = File.ReadAllText(input);
         
-        var parser = new InputParser(fileContents, new CharacterSearcher('\n', true));
+        var parser = new InputParser(in fileContents, new CharacterSearcher('\n', true));
         _strategies = new Strategy [parser.NodeCount];
         for (var i = 0; i < parser.NodeCount; ++i)
         {
-            var value = parser.GetValue(i);
-            var entry = new InputParser(value.ToString(), new CharacterSearcher(' ', true));
+            var line = parser.GetValue(in fileContents, i);
+            var entry = new InputParser(in line, new CharacterSearcher(' ', true));
             GameAction opponentAction = GameAction.Rock, yourAction = GameAction.Rock;
-            opponentAction = entry.GetValue(0)[0] switch
+            opponentAction = entry.GetValue(in line, 0)[0] switch
             {
                 'A' => GameAction.Rock,
                 'B' => GameAction.Paper,
                 'C' => GameAction.Scissors,
                 _ => opponentAction
             };   
-            yourAction = entry.GetValue(1)[0] switch
+            yourAction = entry.GetValue(in line, 1)[0] switch
             {
                 'X' => GameAction.Rock,
                 'Y' => GameAction.Paper,
@@ -43,8 +43,6 @@ public sealed class Part1 : IAOCProject<int>
         for (var i = 0; i < _strategies.Length; ++i) 
         {
             var result = GetGameResult(in i);
-            var roundScore = 3 * (int) result + (int) _strategies[i].YourMove;
-            //Console.WriteLine($"\t{_strategies[i].OpponentMove} vs {_strategies[i].YourMove}::{result} -> {roundScore}=3*{(int)result}+{(int)_strategies[i].YourMove}");
             score += 3 * (int) result + (int)_strategies[i].YourMove;
         }
         return score;

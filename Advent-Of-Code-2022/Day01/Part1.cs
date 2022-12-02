@@ -9,15 +9,15 @@ public sealed class Part1 : IAOCProject<int>
     {
         public List<int> FoodCalories { get; }
 
-        public Elf(in InputParser parser, in int index)
+        public Elf(in ReadOnlySpan<char> input, in InputParser parser, in int index)
         {
             FoodCalories = new List<int>();
             
-            var roValue = parser.GetValue(index);
-            var calories = new InputParser(roValue.ToString(), new CharacterSearcher('\n', true));
+            var roValue = parser.GetValue(in input, index);
+            var calories = new InputParser(roValue, new CharacterSearcher('\n', true));
             
             for (var i = 0; i < calories.NodeCount; ++i)
-                if (int.TryParse(calories.GetValue(i), out var value))
+                if (int.TryParse(calories.GetValue(roValue, i), out var value))
                     FoodCalories.Add(value);
         }
     }
@@ -26,12 +26,12 @@ public sealed class Part1 : IAOCProject<int>
     
     public void Init(in string input)
     {
-        var fileData = File.ReadAllText(input);
+        ReadOnlySpan<char> fileData = File.ReadAllText(input);
         var parser = new InputParser(
             fileData, 
             new StringSearcher("\r\n\r\n", true));
         for (var i = 0; i < parser.NodeCount; i++)
-            _elfs.Add(new Elf(parser, in i));
+            _elfs.Add(new Elf(in fileData, parser, in i));
     }
 
     public int Run()
