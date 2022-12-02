@@ -5,40 +5,75 @@ namespace Day02;
 
 public sealed class Part2 : IAOCProject<int>
 {
-    private readonly struct Elf
-    {
-        public List<int> FoodCalories { get; }
-
-        public Elf(in InputParser parser, in int index)
-        {
-            FoodCalories = new List<int>();
-            
-            var roValue = parser.GetValue(index);
-            var calories = new InputParser(roValue.ToString(), new CharacterSearcher('\n', true));
-            
-            for (var i = 0; i < calories.NodeCount; ++i)
-                if (int.TryParse(calories.GetValue(i), out var value))
-                    FoodCalories.Add(value);
-        }
-    }
-
-    private readonly List<Elf> _elfs = new ();
+    private StrategyPart2[] _strategies;
     
     public void Init(in string input)
     {
-        var fileData = File.ReadAllText(input);
-        var parser = new InputParser(
-            fileData, 
-            new StringSearcher("\r\n\r\n", true));
-        for (var i = 0; i < parser.NodeCount; i++)
-            _elfs.Add(new Elf(parser, in i));
+        var fileContents = File.ReadAllText(input);
+        
+        var parser = new InputParser(fileContents, new CharacterSearcher('\n', true));
+        _strategies = new StrategyPart2 [parser.NodeCount];
+        for (var i = 0; i < parser.NodeCount; ++i)
+        {
+            var value = parser.GetValue(i);
+            var entry = new InputParser(value.ToString(), new CharacterSearcher(' ', true));
+            var opponentAction = GameAction.Rock;
+            var result = GameResult.Win;
+            opponentAction = entry.GetValue(0)[0] switch
+            {
+                'A' => GameAction.Rock,
+                'B' => GameAction.Paper,
+                'C' => GameAction.Scissors,
+                _ => opponentAction
+            };   
+            result = entry.GetValue(1)[0] switch
+            {
+                'X' => GameResult.Lose,
+                'Y' => GameResult.Draw,
+                'Z' => GameResult.Win,
+                _ => result
+            };
+            _strategies[i] = new StrategyPart2(in opponentAction, in result);
+        }
+
     }
 
     public int Run()
     {
-        return _elfs
-            .OrderByDescending(x => x.FoodCalories.Sum())
-            .Take(3)
-            .Sum(x => x.FoodCalories.Sum());
+        var score = 0;
+        for (var i = 0; i < _strategies.Length; ++i)
+        {
+            var opponentMove = (int)_strategies[i].OpponentMove - 1;
+            var yourMove = _strategies[i].Result switch
+            {
+                GameResult.Draw => opponentMove,
+                GameResult.Win => (opponentMove + 1) % 3,
+                GameResult.Lose => opponentMove == 0 ? 2 : opponentMove - 1,
+                _ => 0
+            };
+
+            
+            //var strategy = new Strategy(_strategies[i].OpponentMove, (GameAction)(yourMove + 1));
+            
+            Console.WriteLine($"{_strategies[i].Result}, {_strategies[i].OpponentMove} vs {(GameAction)(yourMove + 1)}");
+            //var result = GetGameResult(in strategy);
+            score += 3 * (int) _strategies[i].Result + (yourMove + 1);
+        }
+        return score;
     }
+
+    // private static GameResult GetGameResult(in Strategy strategy)
+    // {
+    //     if (strategy.OpponentMove == strategy.YourMove)
+    //         return GameResult.Draw;
+    //     
+    //     var yourMove = (int)strategy.YourMove - 1;
+    //     if (yourMove == 0)
+    //         yourMove = 3;
+    //
+    //     if (yourMove == (int) strategy.OpponentMove)
+    //         return GameResult.Win;
+    //
+    //     return GameResult.Lose;
+    // }
 }
